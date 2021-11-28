@@ -40,7 +40,7 @@ While this chapter does not introduce any new models or datasets,
 the advanced modeling chapters that follow rely heavily on these techniques.
 
 ```toc
-:maxdepth: 2
+:maxdepth: 3
 
 model-construction
 parameters
