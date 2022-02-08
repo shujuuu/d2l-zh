@@ -95,7 +95,7 @@ C = tf.Variable(d2l.normal([256, 256], 0, 1))
 按元素分配只需遍历分别为$\mathbf{B}$和$\mathbf{C}$的所有行和列，即可将该值分配给$\mathbf{A}$。
 
 ```{.python .input}
-# Compute A = BC one element at a time
+# 逐元素计算A=BC
 timer.start()
 for i in range(256):
     for j in range(256):
@@ -106,7 +106,7 @@ timer.stop()
 
 ```{.python .input}
 #@tab pytorch
-# Compute A = BC one element at a time
+# 逐元素计算A=BC
 timer.start()
 for i in range(256):
     for j in range(256):
@@ -116,7 +116,7 @@ timer.stop()
 
 ```{.python .input}
 #@tab tensorflow
-# Compute A = BC one element at a time
+# 逐元素计算A=BC
 timer.start()
 for i in range(256):
     for j in range(256):
@@ -127,7 +127,7 @@ timer.stop()
 更快的策略是执行按列分配。
 
 ```{.python .input}
-# Compute A = BC one column at a time
+# 逐列计算A=BC
 timer.start()
 for j in range(256):
     A[:, j] = np.dot(B, C[:, j])
@@ -137,7 +137,7 @@ timer.stop()
 
 ```{.python .input}
 #@tab pytorch
-# Compute A = BC one column at a time
+# 逐列计算A=BC
 timer.start()
 for j in range(256):
     A[:, j] = torch.mv(B, C[:, j])
@@ -202,19 +202,19 @@ print(f'performance in Gigaflops: element {gigaflops[0]:.3f}, '
 这既适用于计算梯度以更新参数时，也适用于用神经网络预测。
 也就是说，每当我们执行$\mathbf{w} \leftarrow \mathbf{w} - \eta_t \mathbf{g}_t$时，消耗巨大。其中
 
-$$\mathbf{g}_t = \partial_{\mathbf{w}} f(\mathbf{x}_{t}, \mathbf{w})$$。
+$$\mathbf{g}_t = \partial_{\mathbf{w}} f(\mathbf{x}_{t}, \mathbf{w}).$$
 
 我们可以通过将其应用于一个小批量观测值来提高此操作的*计算*效率。
 也就是说，我们将梯度$\mathbf{g}_t$替换为一个小批量而不是单个观测值
 
-$$\mathbf{g}_t = \partial_{\mathbf{w}} \frac{1}{|\mathcal{B}_t|} \sum_{i \in \mathcal{B}_t} f(\mathbf{x}_{i}, \mathbf{w})$$
+$$\mathbf{g}_t = \partial_{\mathbf{w}} \frac{1}{|\mathcal{B}_t|} \sum_{i \in \mathcal{B}_t} f(\mathbf{x}_{i}, \mathbf{w}).$$
 
-让我们看看这对$\mathbf{g}_t$的统计属性有什么影响：由于$\mathbf{x}_t$和小批量$\mathcal{B}_t$的所有元素都是从训练集中随机抽出的，因此梯度的预期保持不变。
+让我们看看这对$\mathbf{g}_t$的统计属性有什么影响：由于$\mathbf{x}_t$和小批量$\mathcal{B}_t$的所有元素都是从训练集中随机抽出的，因此梯度的期望保持不变。
 另一方面，方差显著降低。
 由于小批量梯度由正在被平均计算的$b := |\mathcal{B}_t|$个独立梯度组成，其标准差降低了$b^{-\frac{1}{2}}$。
 这本身就是一件好事，因为这意味着更新与完整的梯度更接近了。
 
-天真点说，这表明选择大型的小批量$\mathcal{B}_t$将是普遍可用的。
+直观来说，这表明选择大型的小批量$\mathcal{B}_t$将是普遍可行的。
 然而，经过一段时间后，与计算代价的线性增长相比，标准差的额外减少是微乎其微的。
 在实践中我们选择一个足够大的小批量，它可以提供良好的计算效率同时仍适合GPU的内存。
 下面，我们来看看这些高效的代码。
@@ -465,7 +465,7 @@ sgd_res = train_sgd(0.005, 1)
 mini1_res = train_sgd(.4, 100)
 ```
 
-将批量大小减少到10，每个迭代轮数的时间都会增加，因为每批的工作负载有了更低的执行效率。
+将批量大小减少到10，每个迭代轮数的时间都会增加，因为每批工作负载的执行效率变得更低。
 
 ```{.python .input}
 #@tab all
@@ -489,7 +489,7 @@ d2l.plt.gca().set_xscale('log')
 
 ## 简洁实现
 
-下面用深度学习框架自带算法实现一个通用的训练函数，我们将在本章中其它小结使用它。
+下面用深度学习框架自带算法实现一个通用的训练函数，我们将在本章中其它小节使用它。
 
 ```{.python .input}
 #@save
@@ -530,9 +530,7 @@ def train_concise_ch11(trainer_fn, hyperparams, data_iter, num_epochs=4):
     net.apply(init_weights)
 
     optimizer = trainer_fn(net.parameters(), **hyperparams)
-
-    loss = nn.MSELoss()
-    # L2 Loss = 1/2 * MSE Loss
+    loss = nn.MSELoss(reduction='none')
     animator = d2l.Animator(xlabel='epoch', ylabel='loss',
                             xlim=[0, num_epochs], ylim=[0.22, 0.35])
     n, timer = 0, d2l.Timer()
@@ -541,14 +539,15 @@ def train_concise_ch11(trainer_fn, hyperparams, data_iter, num_epochs=4):
             optimizer.zero_grad()
             out = net(X)
             y = y.reshape(out.shape)
-            l = loss(out, y)/2
-            l.backward()
+            l = loss(out, y)
+            l.mean().backward()
             optimizer.step()
             n += X.shape[0]
             if n % 200 == 0:
                 timer.stop()
+                # MSELoss计算平方误差时不带系数1/2
                 animator.add(n/X.shape[0]/len(data_iter),
-                             (d2l.evaluate_loss(net, data_iter, loss)/2,))
+                             (d2l.evaluate_loss(net, data_iter, loss) / 2,))
                 timer.start()
     print(f'loss: {animator.Y[0][-1]:.3f}, {timer.avg():.3f} sec/epoch')
 ```
@@ -563,9 +562,6 @@ def train_concise_ch11(trainer_fn, hyperparams, data_iter, num_epochs=2):
             kernel_initializer=tf.random_normal_initializer(stddev=0.01)))
     optimizer = trainer_fn(**hyperparams)
     loss = tf.keras.losses.MeanSquaredError()
-    # 注意: L2 Loss = 1/2 * MSE Loss。
-    # TensorFlow的MSE损失与MXNet的L2损失大概相差2倍。
-    # 因此，我们将TensorFlow中的损失减半
     animator = d2l.Animator(xlabel='epoch', ylabel='loss',
                             xlim=[0, num_epochs], ylim=[0.22, 0.35])
     n, timer = 0, d2l.Timer()
@@ -573,7 +569,7 @@ def train_concise_ch11(trainer_fn, hyperparams, data_iter, num_epochs=2):
         for X, y in data_iter:
             with tf.GradientTape() as g:
                 out = net(X)
-                l = loss(y, out)/2
+                l = loss(y, out)
                 params = net.trainable_variables
                 grads = g.gradient(l, params)
             optimizer.apply_gradients(zip(grads, params))
@@ -582,7 +578,8 @@ def train_concise_ch11(trainer_fn, hyperparams, data_iter, num_epochs=2):
                 timer.stop()
                 p = n/X.shape[0]
                 q = p/tf.data.experimental.cardinality(data_iter).numpy()
-                r = (d2l.evaluate_loss(net, data_iter, loss)/2,)
+                # MeanSquaredError计算平方误差时不带系数1/2
+                r = (d2l.evaluate_loss(net, data_iter, loss) / 2,)
                 animator.add(q, r)
                 timer.start()
     print(f'loss: {animator.Y[0][-1]:.3f}, {timer.avg():.3f} sec/epoch')
@@ -599,7 +596,7 @@ train_concise_ch11('sgd', {'learning_rate': 0.05}, data_iter)
 #@tab pytorch
 data_iter, _ = get_data_ch11(10)
 trainer = torch.optim.SGD
-train_concise_ch11(trainer, {'lr': 0.05}, data_iter)
+train_concise_ch11(trainer, {'lr': 0.01}, data_iter)
 ```
 
 ```{.python .input}
@@ -611,7 +608,7 @@ train_concise_ch11(trainer, {'learning_rate': 0.05}, data_iter)
 
 ## 小结
 
-* 由于减少了深度学习框架的额外开销，使用更好的内存方位以及CPU和GPU上的缓存，向量化使代码更加高效。
+* 由于减少了深度学习框架的额外开销，使用更好的内存定位以及CPU和GPU上的缓存，向量化使代码更加高效。
 * 随机梯度下降的“统计效率”与大批量一次处理数据的“计算效率”之间存在权衡。小批量随机梯度下降提供了两全其美的答案：计算和统计效率。
 * 在小批量随机梯度下降中，我们处理通过训练数据的随机排列获得的批量数据（即每个观测值只处理一次，但按随机顺序）。
 * 在训练期间降低学习率有助于训练。

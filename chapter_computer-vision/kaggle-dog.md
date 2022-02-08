@@ -6,7 +6,7 @@
 你需要一个Kaggle账户才能提交结果。
 
 在这场比赛中，我们将识别120类不同品种的狗。
-这个数据集实际上是著名的ImageNet的数据集子集，却与 :numref:`sec_kaggle_cifar10`中CIFAR-10数据集中的图像不同。
+这个数据集实际上是著名的ImageNet的数据集子集。与 :numref:`sec_kaggle_cifar10`中CIFAR-10数据集中的图像不同，
 ImageNet数据集中的图像更高更宽，且尺寸不一。
 
 ![狗的品种鉴定比赛网站，你可以通过单击“数据”选项卡来获得比赛数据集。](../img/kaggle-dog.jpg)
@@ -33,12 +33,12 @@ import os
 
 ## 获取和整理数据集
 
-比赛数据集分为训练集和测试集，其中分别包含三个RGB（彩色）通道的10222和10357张JPEG图像。
+比赛数据集分为训练集和测试集，分别包含RGB（彩色）通道的10222张、10357张JPEG图像。
 在训练数据集中，有120种犬类，如拉布拉多、贵宾、腊肠、萨摩耶、哈士奇、吉娃娃和约克夏等。
 
 ### 下载数据集
 
-登录Kaggle后，你可以点击 :numref:`fig_kaggle_dog`中显示的竞争网页上的“数据”选项卡，然后点击“全部下载”按钮下载数据集。在`../data`中解压下载的文件后，你将在以下路径中找到整个数据集：
+登录Kaggle后，你可以点击 :numref:`fig_kaggle_dog`中显示的竞赛网页上的“数据”选项卡，然后点击“全部下载”按钮下载数据集。在`../data`中解压下载的文件后，你将在以下路径中找到整个数据集：
 
 * ../data/dog-breed-identification/labels.csv
 * ../data/dog-breed-identification/sample_submission.csv
@@ -46,7 +46,7 @@ import os
 * ../data/dog-breed-identification/test
 
 
-你可能已经注意到，上述结构与 :numref:`sec_kaggle_cifar10`的CIFAR-10竞争对手类似，其中文件夹`train/`和`test/`分别包含训练和测试狗图像，`labels.csv`包含训练图像的标签。
+你可能已经注意到，上述结构与 :numref:`sec_kaggle_cifar10`的CIFAR-10竞赛类似，其中文件夹`train/`和`test/`分别包含训练和测试狗图像，`labels.csv`包含训练图像的标签。
 同样，为了便于入门，[**我们提供完整数据集的小规模样本**]：`train_valid_test_tiny.zip`。
 如果你要在Kaggle比赛中使用完整的数据集，则需要将下面的`demo`变量更改为`False`。
 
@@ -90,7 +90,7 @@ reorg_dog_data(data_dir, valid_ratio)
 
 ```{.python .input}
 transform_train = gluon.data.vision.transforms.Compose([
-    # 随机裁剪图像，所得图像为原始面积的0.08到1之间，高宽比在3/4和4/3之间。 
+    # 随机裁剪图像，所得图像为原始面积的0.08到1之间，高宽比在3/4和4/3之间。
     # 然后，缩放图像以创建224x224的新图像
     gluon.data.vision.transforms.RandomResizedCrop(224, scale=(0.08, 1.0),
                                                    ratio=(3.0/4.0, 4.0/3.0)),
@@ -110,8 +110,8 @@ transform_train = gluon.data.vision.transforms.Compose([
 ```{.python .input}
 #@tab pytorch
 transform_train = torchvision.transforms.Compose([
-    # 随机裁剪图像，所得图像为原始面积的0.08到1之间，高宽比在3/4和4/3之间。 
-    # 然后，缩放图像以创建224 x 224的新图像
+    # 随机裁剪图像，所得图像为原始面积的0.08到1之间，高宽比在3/4和4/3之间。
+    # 然后，缩放图像以创建224x224的新图像
     torchvision.transforms.RandomResizedCrop(224, scale=(0.08, 1.0),
                                              ratio=(3.0/4.0, 4.0/3.0)),
     torchvision.transforms.RandomHorizontalFlip(),
@@ -203,9 +203,9 @@ test_iter = torch.utils.data.DataLoader(test_ds, batch_size, shuffle=False,
 ## [**微调预训练模型**]
 
 同样，本次比赛的数据集是ImageNet数据集的子集。
-因此，我们可以使用 :numref:`sec_fine_tuning`中讨论的方法在完整ImageNet数据集上选择预训练的模型，然后使用该模型提取图像要素，以便将其输入到定制的小规模输出网络中。
+因此，我们可以使用 :numref:`sec_fine_tuning`中讨论的方法在完整ImageNet数据集上选择预训练的模型，然后使用该模型提取图像特征，以便将其输入到定制的小规模输出网络中。
 深度学习框架的高级API提供了在ImageNet数据集上预训练的各种模型。
-在这里，我们选择预训练的ResNet-34模型，我们只需重复使用此模型的输出层（即提取的要素）的输入。
+在这里，我们选择预训练的ResNet-34模型，我们只需重复使用此模型的输出层（即提取的特征）的输入。
 然后，我们可以用一个可以训练的小型自定义输出网络替换原始输出层，例如堆叠两个完全连接的图层。
 与 :numref:`sec_fine_tuning`中的实验不同，以下内容不重新训练用于特征提取的预训练模型，这节省了梯度下降的时间和内存空间。
 
