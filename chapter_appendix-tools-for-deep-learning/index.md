@@ -5,7 +5,7 @@
 例如如何运行这本交互式开源书籍和为本书做贡献。
 
 ```toc
-:maxdepth: 2
+:maxdepth: 111
 
 jupyter
 sagemaker
