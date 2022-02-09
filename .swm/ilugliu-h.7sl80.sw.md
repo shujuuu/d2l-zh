@@ -3,9 +3,52 @@ id: 7sl80
 name: ㄗilugliu h
 file_version: 1.0.2
 app_version: 0.7.4-0
+file_blobs:
+  static/frontpage/frontpage.html: cd2187fe3c05aab42da67408db20c264cd556a98
 ---
 
 test test
+
+adding snippets here and testing if outdated docs will show up for
+
+<br/>
+
+<!-- NOTE-swimm-snippet: the lines below link your snippet to Swimm -->
+### 📄 static/frontpage/frontpage.html
+```html
+⬜ 24         padding-bottom: 35px;
+⬜ 25     }
+⬜ 26     
+🟩 27     .header p {
+🟩 28         font-size: 1.25rem;
+🟩 29         letter-spacing: 0px;
+🟩 30         line-height: 1.5rempx;
+🟩 31         padding-bottom: 10px;
+🟩 32     }
+⬜ 33     
+⬜ 34     .header .mdl-button {
+⬜ 35       margin: 0px 10px;
+```
+
+<br/>
+
+<!-- NOTE-swimm-snippet: the lines below link your snippet to Swimm -->
+### 📄 static/frontpage/frontpage.html
+```html
+⬜ 117        padding-bottom: 2em;
+⬜ 118        width: 100%;
+⬜ 119    }
+🟩 120    #map {
+🟩 121        height: 400px;
+🟩 122        width: 100%;
+🟩 123    }
+🟩 124    #mapimg {
+🟩 125        width: 100%;
+🟩 126    }
+⬜ 127    a {
+⬜ 128      font-size: normal;
+⬜ 129    }
+```
 
 <br/>
 
