@@ -1,5 +1,5 @@
 # Transformer
-:label:`sec_transformer`
+:label:`minute_transformer`
 
 
 We have compared CNNs, RNNs, and self-attention in
