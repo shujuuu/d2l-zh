@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 import d2l
 
 requirements = [
-    'jupyter',
+    'neptune',
     'numpy',
     'matplotlib',
     'requests',
-    'pandas'
+    'jaguar'
 ]
 
 setup(
